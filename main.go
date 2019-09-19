@@ -1,56 +1,39 @@
 package main
 
 import (
+	firestore "cloud.google.com/go/firestore"
+	"context"
 	"encoding/json"
 	firebase "firebase.google.com/go"
-	"firebase.google.com/go/auth"
 	"fmt"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"google.golang.org/api/option"
-	"math/rand"
+	"log"
 	"net/http"
 	"os"
-	"strconv"
 )
 
-var opt = option.WithCredentialsFile("path/to/serviceAccountKey.json")
+const FulfillmentCol = "fulfillments"
 
-type Post struct {
+var opt = option.WithCredentialsFile(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+
+type Fulfillment struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
 	Body  string `json:"body"`
 }
 
-var posts []Post
-
 func main() {
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-	port, ok := os.LookupEnv("PORT")
-	if !ok {
-		port = "8000"
-	}
 	router := mux.NewRouter()
-	router.HandleFunc("/getPosts", getPosts).Methods("GET")
-	router.HandleFunc("/getPost/{id}", getPost).Methods("GET")
-	router.HandleFunc("/createPost", createPost).Methods("POST")
-	router.HandleFunc("/updatePost/{id}", updatePost).Methods("PUT")
+	router.HandleFunc("/getFulfillments", getFulfillments).Methods("GET")
+	router.HandleFunc("/getFulfillment/{id}", getFulfillment).Methods("GET")
+	router.HandleFunc("/createFulfilment", createFulfilment).Methods("POST")
+	router.HandleFunc("/updateFulfilment/{id}", updateFulfilment).Methods("PUT")
 
-	posts = append(posts, Post{
-		ID:    "1000000",
-		Title: "Woot",
-		Body:  "Something",
-	})
-	posts = append(posts, Post{
-		ID:    "1000001",
-		Title: "Naniii",
-		Body:  "asdfaw890 a8s0df 8f0s8 ",
-	})
-	posts = append(posts, Post{
-		ID:    "1000002",
-		Title: "Waaaaahhhh",
-		Body:  "-9df0asdf8sa8fs0",
-	})
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = ":8080"
+	}
 
 	fmt.Println("Listening on: " + port)
 	http.ListenAndServe(port, router)
@@ -67,32 +50,104 @@ func endcodePostAndWrite(w http.ResponseWriter, i interface{}) {
 	json.NewEncoder(w).Encode(i)
 }
 
-func getPosts(w http.ResponseWriter, r *http.Request) {
+func setupFirestore() (context.Context, *firestore.Client) {
+	ctx := context.Background()
+	app, err := firebase.NewApp(ctx, nil, opt)
+	handleError(err)
+
+	client, err := app.Firestore(ctx)
+	handleError(err)
+
+	return ctx, client
+}
+
+func getFulfillments(w http.ResponseWriter, r *http.Request) {
+	ctx, client := setupFirestore()
+	defer client.Close()
+
+	docs, err := client.Collection(FulfillmentCol).DocumentRefs(ctx).GetAll()
+	handleError(err)
+
+	if len(docs) == 0 {
+		endcodePostAndWrite(w, &[]Fulfillment{})
+		return
+	}
+
+	posts := make([]Fulfillment, len(docs))
+	for index, doc := range docs {
+		snapshot, _ := doc.Get(ctx)
+		data := snapshot.Data()
+		title, _ := data["title"].(string)
+		body, _ := data["body"].(string)
+		posts[index] = Fulfillment{
+			ID:    doc.ID,
+			Title: title,
+			Body:  body,
+		}
+	}
+
 	endcodePostAndWrite(w, posts)
 }
 
-func getPost(w http.ResponseWriter, r *http.Request) {
+func getFulfillment(w http.ResponseWriter, r *http.Request) {
+	ctx, client := setupFirestore()
+	defer client.Close()
+
 	params := mux.Vars(r)
-	for _, item := range posts {
-		if item.ID == params["id"] {
-			json.NewEncoder(w).Encode(item)
-			return
-		}
+	id := params["id"]
+	doc, err := client.Collection(FulfillmentCol).Doc(id).Get(ctx)
+	if err != nil {
+		log.Fatalln("No fulfillments found", err)
+		endcodePostAndWrite(w, &Fulfillment{})
+		return
 	}
-	endcodePostAndWrite(w, &Post{})
+	fulfillment := doc.Data()
+	endcodePostAndWrite(w, fulfillment)
 }
 
-func createPost(w http.ResponseWriter, r *http.Request) {
-	var post Post
-	err := json.NewDecoder(r.Body).Decode(&post)
+func createFulfilment(w http.ResponseWriter, r *http.Request) {
+	var fulfillment Fulfillment
+	err := json.NewDecoder(r.Body).Decode(&fulfillment)
 	handleError(err)
 
-	post.ID = strconv.Itoa(rand.Intn(1000000))
-	posts = append(posts, post)
-	endcodePostAndWrite(w, post)
+	ctx, client := setupFirestore()
+	defer client.Close()
+
+	doc, _, err := client.Collection(FulfillmentCol).Add(
+		ctx,
+		map[string]interface{}{
+			"title": fulfillment.Title,
+			"body":  fulfillment.Body,
+		},
+	)
+	handleError(err)
+
+	newpost, err := doc.Get(ctx)
+	handleError(err)
+	data := newpost.Data()
+	endcodePostAndWrite(w, data)
 }
 
-func updatePost(w http.ResponseWriter, r *http.Request) {
+func updateFulfilment(w http.ResponseWriter, r *http.Request) {
+	var fulfillment Fulfillment
+	err := json.NewDecoder(r.Body).Decode(&fulfillment)
+	handleError(err)
+
+	ctx, client := setupFirestore()
 	params := mux.Vars(r)
-	fmt.Println(params)
+	id := params["id"]
+	wresult, err := client.Collection(FulfillmentCol).Doc(id).Set(
+		ctx,
+		map[string]interface{}{
+			"title": fulfillment.Title,
+			"body":  fulfillment.Body,
+		},
+		firestore.MergeAll,
+	)
+	handleError(err)
+
+	endcodePostAndWrite(w, &map[string]interface{}{
+		"success":   true,
+		"timestamp": wresult.UpdateTime,
+	})
 }
