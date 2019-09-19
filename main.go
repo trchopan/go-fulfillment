@@ -29,6 +29,8 @@ func main() {
 	router.HandleFunc("/getFulfillment/{id}", getFulfillment).Methods("GET")
 	router.HandleFunc("/createFulfilment", createFulfilment).Methods("POST")
 	router.HandleFunc("/updateFulfilment/{id}", updateFulfilment).Methods("PUT")
+	router.HandleFunc("/fulfillment", endpointStdOut).Methods("GET")
+	router.HandleFunc("/fulfillment", endpointStdOut).Methods("POST")
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -149,4 +151,18 @@ func updateFulfilment(w http.ResponseWriter, r *http.Request) {
 		"success":   true,
 		"timestamp": wresult.UpdateTime,
 	})
+}
+
+func endpointStdOut(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Params:", mux.Vars(r))
+	var bodyJson map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&bodyJson)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	fmt.Println(bodyJson)
+	endcodePostAndWrite(w, &map[string]interface{}{
+		"greeting": "hello dialogflow",
+	})
+
 }
