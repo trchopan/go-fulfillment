@@ -32,11 +32,10 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = ":8080"
+		port = "8080"
 	}
 
-	fmt.Println("Listening on: " + port)
-	http.ListenAndServe(port, router)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
 func handleError(err error) {
