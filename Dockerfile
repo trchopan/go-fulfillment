@@ -18,7 +18,7 @@ FROM alpine
 RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/trchopan/go-fulfillment/go-fulfillment
+COPY --from=builder /go/src/github.com/trchopan/go-fulfillment/go-fulfillment /go-fulfillment
 
 # Copy template
 # COPY index.html /index.html
