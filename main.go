@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+    "time"
 )
 
 const FulfillmentCol = "fulfillments"
@@ -29,7 +30,6 @@ func main() {
 	router.HandleFunc("/getFulfillment/{id}", getFulfillment).Methods("GET")
 	router.HandleFunc("/createFulfilment", createFulfilment).Methods("POST")
 	router.HandleFunc("/updateFulfilment/{id}", updateFulfilment).Methods("PUT")
-	router.HandleFunc("/fulfillment", endpointStdOut).Methods("GET")
 	router.HandleFunc("/fulfillment", endpointStdOut).Methods("POST")
 
 	port := os.Getenv("PORT")
@@ -40,7 +40,11 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))
 }
 
-func handleError(err error) {
+func getNowInMillisecond() int64 {
+    return time.Now().UnixNano() / 1000000
+}
+
+func panicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -54,10 +58,10 @@ func endcodePostAndWrite(w http.ResponseWriter, i interface{}) {
 func setupFirestore() (context.Context, *firestore.Client) {
 	ctx := context.Background()
 	app, err := firebase.NewApp(ctx, nil, opt)
-	handleError(err)
+	panicOnError(err)
 
 	client, err := app.Firestore(ctx)
-	handleError(err)
+	panicOnError(err)
 
 	return ctx, client
 }
@@ -67,7 +71,7 @@ func getFulfillments(w http.ResponseWriter, r *http.Request) {
 	defer client.Close()
 
 	docs, err := client.Collection(FulfillmentCol).DocumentRefs(ctx).GetAll()
-	handleError(err)
+	panicOnError(err)
 
 	if len(docs) == 0 {
 		endcodePostAndWrite(w, &[]Fulfillment{})
@@ -109,7 +113,7 @@ func getFulfillment(w http.ResponseWriter, r *http.Request) {
 func createFulfilment(w http.ResponseWriter, r *http.Request) {
 	var fulfillment Fulfillment
 	err := json.NewDecoder(r.Body).Decode(&fulfillment)
-	handleError(err)
+	panicOnError(err)
 
 	ctx, client := setupFirestore()
 	defer client.Close()
@@ -121,10 +125,10 @@ func createFulfilment(w http.ResponseWriter, r *http.Request) {
 			"body":  fulfillment.Body,
 		},
 	)
-	handleError(err)
+	panicOnError(err)
 
 	newpost, err := doc.Get(ctx)
-	handleError(err)
+	panicOnError(err)
 	data := newpost.Data()
 	endcodePostAndWrite(w, data)
 }
@@ -132,7 +136,7 @@ func createFulfilment(w http.ResponseWriter, r *http.Request) {
 func updateFulfilment(w http.ResponseWriter, r *http.Request) {
 	var fulfillment Fulfillment
 	err := json.NewDecoder(r.Body).Decode(&fulfillment)
-	handleError(err)
+	panicOnError(err)
 
 	ctx, client := setupFirestore()
 	params := mux.Vars(r)
@@ -145,7 +149,7 @@ func updateFulfilment(w http.ResponseWriter, r *http.Request) {
 		},
 		firestore.MergeAll,
 	)
-	handleError(err)
+	panicOnError(err)
 
 	endcodePostAndWrite(w, &map[string]interface{}{
 		"success":   true,
@@ -154,15 +158,28 @@ func updateFulfilment(w http.ResponseWriter, r *http.Request) {
 }
 
 func endpointStdOut(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Params:", mux.Vars(r))
 	var bodyJson map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&bodyJson)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Println(bodyJson)
+
+	jsonBytes, err := json.Marshal(bodyJson)
+	panicOnError(err)
+
+	ctx, client := setupFirestore()
+	defer client.Close()
+
+	_, _, err = client.Collection(FulfillmentCol).Add(
+		ctx,
+		map[string]interface{}{
+			"fulfillment": string(jsonBytes),
+            "timestamp": getNowInMillisecond(),
+		},
+	)
+	panicOnError(err)
+
 	endcodePostAndWrite(w, &map[string]interface{}{
 		"greeting": "hello dialogflow",
 	})
-
 }
