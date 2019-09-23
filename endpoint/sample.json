@@ -1,0 +1,137 @@
+{
+  "originalDetectIntentRequest": {
+    "payload": {
+      "availableSurfaces": [
+        {
+          "capabilities": [
+            { "name": "actions.capability.AUDIO_OUTPUT" },
+            { "name": "actions.capability.SCREEN_OUTPUT" },
+            { "name": "actions.capability.WEB_BROWSER" }
+          ]
+        }
+      ],
+      "conversation": {
+        "conversationId": "ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-",
+        "type": "NEW"
+      },
+      "inputs": [
+        {
+          "arguments": [
+            {
+              "name": "trigger_query",
+              "rawText": "turn on the light in the living room",
+              "textValue": "turn on the light in the living room"
+            }
+          ],
+          "intent": "actions.intent.MAIN",
+          "rawInputs": [
+            {
+              "inputType": "VOICE",
+              "query": "talk to Jarvis Alpha turn on the light in the living room"
+            }
+          ]
+        }
+      ],
+      "isInSandbox": true,
+      "surface": {
+        "capabilities": [
+          { "name": "actions.capability.AUDIO_OUTPUT" },
+          { "name": "actions.capability.MEDIA_RESPONSE_AUDIO" },
+          { "name": "actions.capability.ACCOUNT_LINKING" },
+          { "name": "actions.capability.SCREEN_OUTPUT" },
+          { "name": "actions.capability.WEB_BROWSER" }
+        ]
+      },
+      "user": {
+        "lastSeen": "2019-09-21T09:19:26Z",
+        "locale": "en-US",
+        "userVerificationStatus": "VERIFIED"
+      }
+    },
+    "source": "google",
+    "version": "2"
+  },
+  "queryResult": {
+    "allRequiredParamsPresent": true,
+    "fulfillmentMessages": [
+      { "text": { "text": ["OK. I will turn on the light in Living Room"] } }
+    ],
+    "fulfillmentText": "OK. I will turn on the light in Living Room",
+    "intent": {
+      "displayName": "Lighting",
+      "endInteraction": true,
+      "name": "projects/hermes-7b876/agent/intents/1266910a-6c79-4be3-9212-d5af86227017"
+    },
+    "intentDetectionConfidence": 0.6962804,
+    "languageCode": "en",
+    "outputContexts": [
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/actions_capability_audio_output",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      },
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/actions_capability_media_response_audio",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      },
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/actions_capability_account_linking",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      },
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/actions_capability_screen_output",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      },
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/actions_capability_web_browser",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      },
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/google_assistant_input_type_voice",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      },
+      {
+        "name": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-/contexts/google_assistant_welcome",
+        "parameters": {
+          "MyRooms": "Living Room",
+          "MyRooms.original": "living room",
+          "State": "on",
+          "State.original": "on"
+        }
+      }
+    ],
+    "parameters": { "MyRooms": "Living Room", "State": "on" },
+    "queryText": "turn on the light in the living room"
+  },
+  "responseId": "4ac51e45-c296-40d7-bb8d-d50b3d8e0476-f308a5c4",
+  "session": "projects/hermes-7b876/agent/environments/__aog-2/users/-/sessions/ABwppHE2C7_sXFymWqqhT6Yj6AvDkc2PnW4bKWCfXre05I2opRRXYbhw1egAvxI0kboQqKZL2Hk8QfR-"
+}
